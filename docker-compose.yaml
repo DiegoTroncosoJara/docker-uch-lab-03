@@ -1,0 +1,20 @@
+name: diego-troncoso
+services:
+  app:
+    image: diego-troncoso
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      PORT: ${PORT:-3000}
+      AMBIENTE: ${AMBIENTE:-develop}
+      API_KEY: ${API_KEY:-api-key-develop}
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network-diego-troncoso
+
+networks:
+  app-network-diego-troncoso:
+    driver: bridge

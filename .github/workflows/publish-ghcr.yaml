@@ -1,0 +1,14 @@
+name: Docker Image CI for GHCR Curso Contenedores Diego Troncoso
+
+on: push
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checout@v3
+      - name: Build and push the image Curso Contenedores Diego Troncoso
+        run: |
+          docker login --username DiegoTroncosoJara --password ${{ secrets.GH_PAT }} ghcr.io
+          docker build . --tag ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:latest
+          docker push ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:latest
