@@ -15,5 +15,24 @@ pipeline {
                 }
             }
         }
+
+        stage('install') {
+            steps {
+                container('node') {
+                    sh '''
+                        corepack enable
+                        pnpm install --frozen-lockfile
+                    '''
+                }
+            }
+        }
+
+        stage('test') {
+            steps {
+                container('node') {
+                    sh 'pnpm test --runInBand'
+                }
+            }
+        }
     }
 }
