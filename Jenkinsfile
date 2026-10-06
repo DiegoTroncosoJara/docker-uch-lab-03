@@ -34,5 +34,12 @@ pipeline {
                 }
             }
         }
+        stage('build') {
+            steps {
+                container('node') {
+                    sh 'pnpm build'
+                }
+            }
+        }
     }
 }
