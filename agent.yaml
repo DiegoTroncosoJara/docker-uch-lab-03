@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: node
+      image: node:24
+      command:
+        - sleep
+      args:
+        - infinity

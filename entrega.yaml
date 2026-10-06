@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns-diego-troncoso
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-diego-troncoso
+  namespace: ns-diego-troncoso
+data:
+  AMBIENTE: produccion
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secret-diego-troncoso
+  namespace: ns-diego-troncoso
+type: Opaque
+stringData:
+  API_KEY: clave-de-prueba
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-diego-troncoso
+  namespace: ns-diego-troncoso
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: app-diego-troncoso
+  template:
+    metadata:
+      labels:
+        app: app-diego-troncoso
+    spec:
+      containers:
+        - name: app
+          image: ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: PORT
+              value: "3000"
+            - name: AMBIENTE
+              valueFrom:
+                configMapKeyRef:
+                  name: config-diego-troncoso
+                  key: AMBIENTE
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: secret-diego-troncoso
+                  key: API_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-diego-troncoso
+  namespace: ns-diego-troncoso
+spec:
+  selector:
+    app: app-diego-troncoso
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
