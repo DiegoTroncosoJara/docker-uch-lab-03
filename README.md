@@ -79,11 +79,21 @@ La entrega debe cumplir con lo siguiente:
 
 # COMANDOS
 
+# crear secreto github
+
 kubectl create secret docker-registry regcred-gh \
  --namespace=jenkins \
  --docker-server=ghcr.io \
  --docker-username=DiegoTroncosoJara \
  --docker-password="$GH_TOKEN"
+
+# crear secreto dockerhub
+
+kubectl create secret docker-registry regcred-dh \
+ --namespace=jenkins \
+ --docker-server=https://index.docker.io/v1/ \
+ --docker-username=diegotroncoso \
+ --docker-password="$DH_TOKEN"
 
 # ------
 
