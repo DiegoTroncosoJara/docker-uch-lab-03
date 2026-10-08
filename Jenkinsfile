@@ -20,20 +20,18 @@ pipeline {
     agent {
         // El plugin Kubernetes crea un Pod temporal para ejecutar el pipeline.
         kubernetes {
+            cloud 'kubernetes'
             // Los sh sin container(...) se ejecutan en node-tool.
             defaultContainer 'node-tool'
             yamlFile 'agent.yaml'
-            cloud 'kubernetes'
         }
     }
 
     stages {
         stage('CI - Comprobar Agente') {
             steps {
-                container('node') {
-                    sh 'node --version'
-                    sh 'npm --version'
-                }
+                sh 'node --version'
+                sh 'npm --version'
             }
         }
 
