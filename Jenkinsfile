@@ -27,6 +27,14 @@ pipeline {
         }
     }
 
+    environment {
+        // Repositorio de destino en GitHub Container Registry, sin etiqueta.
+        GH_REPO = 'ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr'
+        // Namespace de la aplicacion que se actualizara durante el despliegue.
+        K8S_NAMESPACE = 'ns-diego-troncoso'
+        GHCR = credentials('ghcr-credentials')
+    }
+
     stages {
         stage('CI - Comprobar Agente') {
             steps {
@@ -89,6 +97,34 @@ pipeline {
             steps{
                  // Ejecuta nest build y genera dist/. Comprueba la compilacion antes de publicar.
                  sh 'pnpm build'
+            }
+        }
+        // ==============================================================================
+        // CD: construir y publicar en dos registros
+        // ==============================================================================
+        // Esta etapa no tiene when: se ejecuta en todas las ramas que superan la CI.
+        stage("CD - Construccion imagen y upload"){
+            steps{
+                container("buildkit"){
+                    sh '''
+                        set +x
+
+                        export DOCKER_CONFIG="$(mktemp -d)"
+                        trap 'rm -rf "$DOCKER_CONFIG"' EXIT
+
+                        AUTH="$(printf '%s:%s' "$GHCR_USR" "$GHCR_PSW" \
+                            | base64 | tr -d '\\n')"
+
+                        printf '{"auths":{"ghcr.io":{"auth":"%s"}}}' "$AUTH" \
+                            > "$DOCKER_CONFIG/config.json"
+
+                        buildctl-daemonless.sh build \
+                        --frontend dockerfile.v0 \
+                        --local context=. \
+                        --local dockerfile=. \
+                        --output "type=image,name=${GH_REPO}:diego-troncoso-${BUILD_NUMBER},push=true"
+                    '''
+                }
             }
         }
     }

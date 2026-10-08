@@ -25,3 +25,30 @@ spec:
           cpu: "1000m"
           # Maximo de 512Mi. --runInBand evita crear varios trabajadores Jest en paralelo.
           memory: "512Mi"
+    # ==============================================================================
+    # BuildKit: construccion y publicacion de imagenes
+    # ==============================================================================
+    - name: buildkit
+      # BuildKit rootless no necesita el daemon Docker del host. La etiqueta rootless
+      # no fija una version numerada de BuildKit.
+      image: moby/buildkit:rootless
+      # Deja la construccion a los pasos del pipeline, no al inicio del Pod.
+      command:
+        # Mantiene disponible el contenedor antes y entre las construcciones.
+        - cat
+      # Terminal para el proceso de espera.
+      tty: true
+      # Recursos para el constructor y los procesos que lanza durante el build.
+      resources:
+        # Requests de BuildKit; se suman a los de los otros contenedores del Pod.
+        requests:
+          # 1 CPU solicitado para construir imagenes.
+          cpu: "1000m"
+          # 256Mi de memoria solicitados, no el maximo permitido.
+          memory: "256Mi"
+        # Topes de ejecucion del constructor.
+        limits:
+          # Maximo de 1 CPU.
+          cpu: "1000m"
+          # Maximo de 2Gi. Un build que supera el limite puede terminar por OOMKilled.
+          memory: "2Gi"
