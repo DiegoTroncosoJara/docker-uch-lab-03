@@ -28,6 +28,8 @@ pipeline {
     }
 
     environment {
+        // Repositorio de destino en Docker Hub, sin etiqueta.
+        DH_REPO = 'diegotroncoso/curso-03-uch-final-ghcr'
         // Repositorio de destino en GitHub Container Registry, sin etiqueta.
         GH_REPO = 'ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr'
         // Namespace de la aplicacion que se actualizara durante el despliegue.
@@ -122,22 +124,40 @@ pipeline {
             steps{
                 container("buildkit"){
                     sh '''
-                        set +x
+                         # Selecciona la CARPETA que contiene config.json con autenticacion para Docker Hub.
+                        export DOCKER_CONFIG=/docker-config/dockerhub
+                        # Falla si el archivo no existe o esta vacio, sin imprimir las credenciales.
+                        test -s ${DOCKER_CONFIG}/config.json
 
-                        export DOCKER_CONFIG="$(mktemp -d)"
-                        trap 'rm -rf "$DOCKER_CONFIG"' EXIT
-
-                        AUTH="$(printf '%s:%s' "$GHCR_USR" "$GHCR_PSW" \
-                            | base64 | tr -d '\\n')"
-
-                        printf '{"auths":{"ghcr.io":{"auth":"%s"}}}' "$AUTH" \
-                            > "$DOCKER_CONFIG/config.json"
-
+                        # buildctl-daemonless.sh inicia BuildKit para esta construccion, sin usar el
+                        # daemon Docker del host. Las barras finales continuan el comando en otra linea.
+                        # --frontend dockerfile.v0 interpreta las instrucciones del Dockerfile.
+                        # --local context=. envia el directorio actual como contexto de construccion.
+                        # --local dockerfile=. indica donde encontrar el Dockerfile.
+                        # --output type=image exporta una imagen; name contiene dos etiquetas del mismo
+                        # repositorio. latest es mutable y BUILD_NUMBER identifica esta ejecucion Jenkins.
+                        # push=true publica las etiquetas en el registro en lugar de solo construir.
+                        # Las comillas escapadas mantienen unida la lista name con comas.
+                        
                         buildctl-daemonless.sh build \
                         --frontend dockerfile.v0 \
                         --local context=. \
                         --local dockerfile=. \
-                        --output "type=image,name=${GH_REPO}:diego-troncoso-${BUILD_NUMBER},push=true"
+                        --output type=image,\\\"name=${DH_REPO}:latest,${DH_REPO}:${BUILD_NUMBER}\\\",push=true
+
+                        # Cambia la carpeta de autenticacion para la segunda publicacion, esta vez en GHCR.
+                        export DOCKER_CONFIG=/docker-config/github
+                        # Comprueba tambien que la configuracion de GHCR exista y tenga contenido.
+                        test -s ${DOCKER_CONFIG}/config.json
+
+                        # Segunda llamada a BuildKit: construye y publica las dos etiquetas de GHCR.
+                        # El archivo actual realiza dos construcciones; no es una copia entre registros.
+                        
+                        buildctl-daemonless.sh build \
+                        --frontend dockerfile.v0 \
+                        --local context=. \
+                        --local dockerfile=. \
+                        --output type=image,\\\"name=${GH_REPO}:latest,${GH_REPO}:${BUILD_NUMBER}\\\",push=true
                     '''
                 }
             }
