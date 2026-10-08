@@ -23,6 +23,7 @@ pipeline {
             // Los sh sin container(...) se ejecutan en node-tool.
             defaultContainer 'node-tool'
             yamlFile 'agent.yaml'
+            cloud 'kubernetes'
         }
     }
 
