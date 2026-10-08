@@ -1,3 +1,21 @@
+// ==============================================================================
+// Pipeline principal: integracion continua (CI) y entrega/despliegue (CD)
+// ==============================================================================
+// CI: instala dependencias, ejecuta lint y pruebas, y compila NestJS.
+// CD: construye y publica imagenes en Docker Hub y GHCR; main y test despliegan.
+// Las etapas se ejecutan en orden. Un sh que termina con codigo distinto de cero
+// falla el paso y normalmente impide continuar con las etapas siguientes.
+//
+// Requisitos de Jenkins: Declarative Pipeline, Kubernetes plugin para el agente
+// y Kubernetes CLI plugin para withKubeConfig. El checkout debe incluir
+// agent-node.yaml, Dockerfile y los archivos de dependencias de la aplicacion.
+// regcred-dh y regcred-gh son Secrets del namespace del agente, montados en
+// BuildKit; kubernetes-config es una credencial de Jenkins para el despliegue.
+// Son mecanismos distintos: publicar una imagen no concede permisos en Kubernetes.
+//
+// Documentacion: https://www.jenkins.io/doc/book/pipeline/syntax/
+// Plugins: https://plugins.jenkins.io/kubernetes/
+//          https://plugins.jenkins.io/kubernetes-cli/
 pipeline {
     agent {
         kubernetes {

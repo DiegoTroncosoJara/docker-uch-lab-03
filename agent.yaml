@@ -3,8 +3,25 @@ kind: Pod
 spec:
   containers:
     - name: node
-      image: node:24
+      # Misma version de Node 24 LTS y distribucion Debian usada en el Dockerfile.
+      image: node:24.21.0-bookworm-slim
+      # Evita ejecutar el comando Node por defecto al iniciar.
       command:
-        - sleep
-      args:
-        - infinity
+        # Mantiene disponible el contenedor mientras dura el pipeline.
+        - cat
+      # Terminal para el proceso cat.
+      tty: true
+      # Presupuesto de ejecucion de Node y sus procesos hijos.
+      resources:
+        # Recursos solicitados al scheduler.
+        requests:
+          # 0.1 CPU solicitado, no el maximo permitido.
+          cpu: "100m"
+          # 128Mi solicitados para ubicar el Pod.
+          memory: "128Mi"
+        # Topes durante instalacion, pruebas y compilacion.
+        limits:
+          # Maximo de 1 CPU.
+          cpu: "1000m"
+          # Maximo de 512Mi. --runInBand evita crear varios trabajadores Jest en paralelo.
+          memory: "512Mi"
