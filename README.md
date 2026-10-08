@@ -77,6 +77,16 @@ La entrega debe cumplir con lo siguiente:
    ● Si tu pod no inicia, usa kubectl describe pod y kubectl logs antes de modificar al
    azar.
 
+# COMANDOS
+
+kubectl create secret docker-registry regcred-gh \
+ --namespace=jenkins \
+ --docker-server=ghcr.io \
+ --docker-username=DiegoTroncosoJara \
+ --docker-password="$GH_TOKEN"
+
+# ------
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
 </p>

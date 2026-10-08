@@ -66,3 +66,29 @@ spec:
           cpu: "1000m"
           # Maximo de 2Gi. Un build que supera el limite puede terminar por OOMKilled.
           memory: "2Gi"
+
+    # Nombre usado por container("kubectl-tool") en los pipelines.
+    - name: kubectl-tool
+      # Imagen que proporciona herramientas de Kubernetes, incluido kubectl.
+      image: alpine/k8s:1.36.1
+      # Mantiene el contenedor preparado, sin lanzar un despliegue automaticamente.
+      command:
+        # Proceso de espera que Jenkins utilizara para ejecutar sus comandos.
+        - cat
+      # Terminal para mantener activo cat.
+      tty: true
+
+      # Recursos de las herramientas de Kubernetes.
+      resources:
+        # Requests del contenedor.
+        requests:
+          # 0.1 CPU solicitado.
+          cpu: "100m"
+          # 128Mi de memoria solicitados.
+          memory: "128Mi"
+        # Limits del contenedor.
+        limits:
+          # Como maximo 1 CPU.
+          cpu: "1000m"
+          # Como maximo 512Mi de memoria.
+          memory: "512Mi"
