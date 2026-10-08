@@ -162,5 +162,44 @@ pipeline {
                 }
             }
         }
+
+        // ==============================================================================
+        // CD: actualizar el Deployment existente en Kubernetes
+        // ==============================================================================
+        stage('CD - Despliegue continuo'){
+            // Condicion para ejecutar SOLO esta etapa; no restringe la publicacion anterior.
+            when {
+                // Basta con que una de las condiciones de rama se cumpla.
+                anyOf {
+                    // Permite desplegar desde main. branch se evalua en un job Multibranch Pipeline.
+                    branch 'main'
+                    // Tambien permite desplegar desde test.
+                    branch 'test'
+                }
+            }
+            steps{
+                // Ejecuta kubectl en la imagen que contiene las herramientas de Kubernetes.
+                container('kubectl-tool'){
+                    // El plugin crea temporalmente un kubeconfig usando la credencial de Jenkins
+                    // kubernetes-config. La identidad debe tener permisos RBAC en el namespace;
+                    // este paso no crea por si solo el namespace, el Deployment ni los Secrets.
+                    withKubeConfig([credentialsId: 'kubernetes-config']){
+                        // El shell expande K8S_NAMESPACE, GH_REPO y BUILD_NUMBER definidos por Jenkins.
+                        sh '''
+                           # Actualiza la imagen del contenedor "app" dentro del Deployment
+                           # app-diego-troncoso. Usa la etiqueta numerada que se acaba de publicar; el
+                           # Deployment inicia una actualizacion de Pods al cambiar su plantilla.
+                           
+                           kubectl -n ${K8S_NAMESPACE} set image deployment/app-diego-troncoso app=${GH_REPO}:${BUILD_NUMBER}
+                           
+                           # Espera e informa el resultado del rollout. Los probes de readiness ayudan
+                           # a determinar cuando los Pods nuevos estan listos para atender trafico.
+                           
+                           kubectl -n ${K8S_NAMESPACE} rollout status deployment/app-diego-troncoso
+                        '''
+                    }
+                }
+            }
+        }
     }
 }
