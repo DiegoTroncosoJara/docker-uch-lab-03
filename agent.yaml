@@ -38,6 +38,20 @@ spec:
         - cat
       # Terminal para el proceso de espera.
       tty: true
+
+      env:
+        - name: BUILDKITD_FLAGS
+          # evita crear un nuevo espacio de procesos y montar un /proc separado para cada RUN
+          # Reduce el aislamiento entre los procesos de construcción dentro del contenedor BuildKit.
+          value: --oci-worker-no-process-sandbox
+
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: Unconfined
+        appArmorProfile:
+          type: Unconfined
       # Recursos para el constructor y los procesos que lanza durante el build.
       resources:
         # Requests de BuildKit; se suman a los de los otros contenedores del Pod.
