@@ -168,15 +168,15 @@ pipeline {
         // ==============================================================================
         stage('CD - Despliegue continuo'){
             // Condicion para ejecutar SOLO esta etapa; no restringe la publicacion anterior.
-            when {
-                // Basta con que una de las condiciones de rama se cumpla.
-                anyOf {
-                    // Permite desplegar desde main. branch se evalua en un job Multibranch Pipeline.
-                    branch 'main'
-                    // Tambien permite desplegar desde test.
-                    branch 'test'
-                }
-            }
+            // when {
+            //     // Basta con que una de las condiciones de rama se cumpla.
+            //     anyOf {
+            //         // Permite desplegar desde main. branch se evalua en un job Multibranch Pipeline.
+            //         branch 'main'
+            //         // Tambien permite desplegar desde test.
+            //         branch 'test'
+            //     }
+            // }
             steps{
                 // Ejecuta kubectl en la imagen que contiene las herramientas de Kubernetes.
                 container('kubectl-tool'){
