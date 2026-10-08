@@ -1,6 +1,24 @@
 apiVersion: v1
 kind: Pod
 spec:
+  # ==============================================================================
+  # Volumenes: credenciales de registro almacenadas en Secrets
+  # ==============================================================================
+  # Los volumenes pertenecen al Pod; volumeMounts decide que contenedor los recibe.
+  volumes:
+    - name: regcred-gh
+      secret:
+        secretName: regcred-gh
+        items:
+          - key: .dockerconfigjson
+            path: config.json
+
+    - name: regcred-dh
+      secret:
+        secretName: regcred-dh
+        items:
+          - key: .dockerconfigjson
+            path: config.json
   containers:
     - name: node-tool
       # Misma version de Node 24 LTS y distribucion Debian usada en el Dockerfile.
@@ -66,6 +84,14 @@ spec:
           cpu: "1000m"
           # Maximo de 2Gi. Un build que supera el limite puede terminar por OOMKilled.
           memory: "2Gi"
+      volumeMounts:
+        - name: regcred-gh
+          mountPath: /docker-config/github
+          readOnly: true
+
+        - name: regcred-dh
+          mountPath: /docker-config/dockerhub
+          readOnly: true
 
     # Nombre usado por container("kubectl-tool") en los pipelines.
     - name: kubectl-tool

@@ -99,6 +99,21 @@ pipeline {
                  sh 'pnpm build'
             }
         }
+
+         // ==============================================================================
+        // CI: TEST DE LOS SECRETOS
+        // ==============================================================================
+        stage('CI - Comprobar secrets de registry') {
+            steps {
+                container('buildkit') {
+                    sh '''
+                        test -s /docker-config/github/config.json
+                        test -s /docker-config/dockerhub/config.json
+                        echo "Ambos archivos de autenticacion estan disponibles"
+                    '''
+                }
+            }
+        }
         // ==============================================================================
         // CD: construir y publicar en dos registros
         // ==============================================================================
