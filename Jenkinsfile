@@ -185,16 +185,15 @@ pipeline {
                     withKubeConfig([credentialsId: 'kubernetes-config']){
                         // El shell expande K8S_NAMESPACE, GH_REPO y BUILD_NUMBER definidos por Jenkins.
                         sh '''
-                           # Actualiza la imagen del contenedor "app" dentro del Deployment
-                           # app-diego-troncoso. Usa la etiqueta numerada que se acaba de publicar; el
-                           # Deployment inicia una actualizacion de Pods al cambiar su plantilla.
-                           
-                           kubectl -n ${K8S_NAMESPACE} set image deployment/app-diego-troncoso app=${GH_REPO}:${BUILD_NUMBER}
-                           
-                           # Espera e informa el resultado del rollout. Los probes de readiness ayudan
-                           # a determinar cuando los Pods nuevos estan listos para atender trafico.
-                           
-                           kubectl -n ${K8S_NAMESPACE} rollout status deployment/app-diego-troncoso
+                            kubectl -n "${K8S_NAMESPACE}" set image \
+                            deployment/app-diego-troncoso \
+                            app="${GH_REPO}:diego-troncoso"
+
+                            kubectl -n "${K8S_NAMESPACE}" rollout restart \
+                            deployment/app-diego-troncoso
+
+                            kubectl -n "${K8S_NAMESPACE}" rollout status \
+                            deployment/app-diego-troncoso --timeout=180s
                         '''
                     }
                 }
