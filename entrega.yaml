@@ -40,6 +40,8 @@ spec:
       containers:
         - name: app
           image: ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:latest
+          # hace que Kubernetes consulte el registry al iniciar cada Pod
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
           env:
