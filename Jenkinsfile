@@ -34,7 +34,6 @@ pipeline {
         GH_REPO = 'ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr'
         // Namespace de la aplicacion que se actualizara durante el despliegue.
         K8S_NAMESPACE = 'ns-diego-troncoso'
-        GHCR = credentials('ghcr-credentials')
     }
 
     stages {
@@ -143,7 +142,7 @@ pipeline {
                         --frontend dockerfile.v0 \
                         --local context=. \
                         --local dockerfile=. \
-                        --output type=image,\\\"name=${DH_REPO}:latest,${DH_REPO}:${BUILD_NUMBER}\\\",push=true
+                        --output type=image,\\\"name=${DH_REPO}:diego-troncoso,${DH_REPO}:${BUILD_NUMBER}\\\",push=true
 
                         # Cambia la carpeta de autenticacion para la segunda publicacion, esta vez en GHCR.
                         export DOCKER_CONFIG=/docker-config/github
@@ -157,7 +156,7 @@ pipeline {
                         --frontend dockerfile.v0 \
                         --local context=. \
                         --local dockerfile=. \
-                        --output type=image,\\\"name=${GH_REPO}:latest,${GH_REPO}:${BUILD_NUMBER}\\\",push=true
+                        --output type=image,\\\"name=${GH_REPO}:diego-troncoso,${GH_REPO}:${BUILD_NUMBER}\\\",push=true
                     '''
                 }
             }
