@@ -8,13 +8,21 @@ La tarea es individual. No basta con copiar los ejemplos de clases: debes cambia
 imágenes, variables y configuraciones para demostrar que entiendes cómo se conectan las
 piezas.
 
+Estado de avance: ✅ indica un punto respaldado por los archivos del proyecto o por
+los resultados comprobados durante el laboratorio. Un punto sin marca queda
+pendiente de completar o verificar. En entregables y evidencias, la marca indica
+que el archivo correspondiente está guardado en este proyecto.
+
+La última separación de las etapas de construcción y publicación está escrita en
+el Jenkinsfile, pero todavía falta confirmar una ejecución exitosa de esa versión.
+
 Objetivo del desafío
 Debes construir un flujo completo que permita:
-● Crear una imagen Docker propia para la aplicación entregada.✅
-● Publicar la imagen en Docker Hub o GitHub Container Registry.
-● Desplegar la aplicación en un cluster Kubernetes local.
-● Automatizar el proceso con Jenkins usando agentes kubernetes.
-● Demostrar que la aplicación funciona usando kubectl y curl.
+● ✅ Crear una imagen Docker propia para la aplicación entregada.
+● ✅ Publicar la imagen en Docker Hub o GitHub Container Registry.
+● ✅ Desplegar la aplicación en un cluster Kubernetes local.
+● ✅ Automatizar el proceso con Jenkins usando agentes kubernetes.
+● ✅ Demostrar que la aplicación funciona usando kubectl y curl.
 Personalización obligatoria
 Cada alumno debe usar nombres propios. Si te llamas Juan Perez, puedes usar el formato
 juan-perez.
@@ -28,33 +36,56 @@ Ejemplo:
 ● Imagen Docker: usuario/tarea-final:${APP_VERSION}
 ● APP_VERSION: 3.0.0
 ● Pipeline Jenkins: Jenkinsfile.Juan-Perez
+
+Personalización comprobada del proyecto:
+
+- ✅ Namespace: `ns-diego-troncoso`.
+- ✅ Deployment: `app-diego-troncoso`, con 2 réplicas.
+- ✅ Service: `svc-diego-troncoso`.
+- ✅ ConfigMap: `config-diego-troncoso`.
+- ✅ Secret de aplicación: `secret-diego-troncoso`.
+- ✅ Imagen Docker Hub: `diegotroncoso/curso-03-uch-final-ghcr:diego-troncoso`.
+- ✅ Imagen GHCR: `ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:diego-troncoso`.
+- ✅ Tags de versión adicionales mediante `${BUILD_NUMBER}`.
+- Nombre personalizado del archivo Jenkinsfile: actualmente se llama `Jenkinsfile`;
+  el ejemplo anterior propone un nombre personalizado.
+
 Requisitos
 La entrega debe cumplir con lo siguiente:
 
-1. Usar un cluster local: Docker Desktop Kubernetes,kubeadm, Minikube, Kind, k3d u
+1. ✅ Usar un cluster local: Docker Desktop Kubernetes,kubeadm, Minikube, Kind, k3d u
    otro.
-2. Crear un Dockerfile funcional y publicar la imagen en el registry de dockerhub y
+2. ✅ Crear un Dockerfile funcional y publicar la imagen en el registry de dockerhub y
    github
-3. Crear Namespace, Deployment, Service, ConfigMap y Secret.
-4. El Deployment debe usar la imagen publicada según tag de nombre (no versión) y
+3. ✅ Crear Namespace, Deployment, Service, ConfigMap y Secret.
+4. ✅ El Deployment debe usar la imagen publicada según tag de nombre (no versión) y
    tener al menos 2 réplicas. Puedes usar la de dockerhub o github, tu eliges.
-5. La aplicación debe leer una variable desde un ConfigMap y un valor desde un
+5. ✅ La aplicación debe leer una variable desde un ConfigMap y un valor desde un
    Secret. Para el caso del configmap, debes guardar y leer la variable AMBIENTE, y
    en el caso del secreto la variable API_KEY
-6. El Jenkinsfile debe tener stages: install,test, build, push y deploy.
-7. El pipeline debe escribirse usando un agente de tipo kubernetes y escribiendo un
+6. ✅ El Jenkinsfile debe tener stages: install,test, build, push y deploy.
+   Las cinco funciones están implementadas en etapas separadas con nombres
+   descriptivos CI/CD. Falta verificar la ejecución de la última versión; para
+   identificar los nombres solicitados se pueden usar `CI - install`, `CI - test`,
+   `CI - build`, `CD - push` y `CD - deploy`.
+7. ✅ El pipeline debe escribirse usando un agente de tipo kubernetes y escribiendo un
    agent.yaml
-8. Las credenciales no deben quedar escritas directamente en el Jenkinsfile.
+8. ✅ Las credenciales no deben quedar escritas directamente en el Jenkinsfile.
    Entregables
    Debes una carpeta comprimida con:
-   ● Dockerfile
-   ● .dockerignore
-   ● Jenkinsfile
-   ● Archivo entrega.yaml con los manifiestos Kubernetes
-   ● Archivo agent.yaml con configuración de agente kuberentes.
+   ● ✅ Dockerfile
+   ● ✅ .dockerignore
+   ● ✅ Jenkinsfile
+   ● ✅ Archivo entrega.yaml con los manifiestos Kubernetes
+   ● ✅ Archivo agent.yaml con configuración de agente kuberentes.
    ● Log de pipeline de jenkins
-   ● README.md con instrucciones de ejecución o instrucciones generales.
+   ● ✅ README.md con instrucciones de ejecución o instrucciones generales.
    ● Carpeta evidencias/ con capturas o salidas de comandos
+
+   Pendiente: guardar `pipeline.log`, reunir la carpeta `evidencias/` y preparar
+   la carpeta comprimida. Se comprobaron comandos y la respuesta de `/lab`, pero
+   todavía no se encontraron esos archivos de evidencia en el proyecto.
+
    Evidencias obligatorias
    Incluye evidencia de estos comandos en tu terminal:
    ● kubectl cluster-info
@@ -67,8 +98,10 @@ La entrega debe cumplir con lo siguiente:
    printenv
    ● kubectl get configmap config-nombre-apellido
    ● kubectl get secret secret-nombre-apellido
+
    También debes incluir evidencia del pipeline Jenkins ejecutado correctamente y una prueba
    de consulta a la aplicación con:
+
    ● kubectl port-forward svc/svc-nombre-apellido 8080:80 -n
    ns-nombre-apellido
    ● curl http://localhost:8080/lab
