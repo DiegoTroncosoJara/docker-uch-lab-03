@@ -3,12 +3,14 @@ en Kubernetes
 El desafío final consiste en llevar una aplicación web desde el código fuente hasta un
 despliegue funcional en Kubernetes, usando Docker, registros de imágenes, Jenkins,
 Jenkinsfile, credenciales y manifiestos Kubernetes.
+
 La tarea es individual. No basta con copiar los ejemplos de clases: debes cambiar nombres,
 imágenes, variables y configuraciones para demostrar que entiendes cómo se conectan las
 piezas.
+
 Objetivo del desafío
 Debes construir un flujo completo que permita:
-● Crear una imagen Docker propia para la aplicación entregada.
+● Crear una imagen Docker propia para la aplicación entregada.✅
 ● Publicar la imagen en Docker Hub o GitHub Container Registry.
 ● Desplegar la aplicación en un cluster Kubernetes local.
 ● Automatizar el proceso con Jenkins usando agentes kubernetes.
@@ -94,6 +96,10 @@ kubectl create secret docker-registry regcred-dh \
  --docker-server=https://index.docker.io/v1/ \
  --docker-username=diegotroncoso \
  --docker-password="$DH_TOKEN"
+
+# kubernetes-config
+
+- Las credenciales deben ser de .kube/config solo que reemplazar "server: https://127.0.0.1:6443" -> "server: https://kubernetes.default.svc" para que Jenkins obtenga la dirección Interna del API para los Pods del cluster y así hacer la actualización en el deployment
 
 # ------
 
