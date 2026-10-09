@@ -35,7 +35,8 @@ spec:
       labels:
         app: app-diego-troncoso
     spec:
-      serviceAccountName: sa-diego-troncoso
+      imagePullSecrets:
+        - name: regcred-gh
       containers:
         - name: app
           image: ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:latest
@@ -67,12 +68,3 @@ spec:
     - port: 80
       targetPort: 3000
   type: ClusterIP
-
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: sa-diego-troncoso
-  namespace: ns-diego-troncoso
-imagePullSecrets:
-  - name: regcred-gh

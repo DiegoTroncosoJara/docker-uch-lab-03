@@ -101,6 +101,12 @@ kubectl create secret docker-registry regcred-dh \
 
 - Las credenciales deben ser de .kube/config solo que reemplazar "server: https://127.0.0.1:6443" -> "server: https://kubernetes.default.svc" para que Jenkins obtenga la dirección Interna del API para los Pods del cluster y así hacer la actualización en el deployment
 
+# Crear cuentas de usuario
+
+- 'kubectl get serviceaccounts' o 'kubectl get sa'
+- kubectl create sa cmd-sa -n ns-diego-troncoso
+- kubectl create token cmd-sa -n ns-diego-troncoso --duration=8h
+
 # ------
 
 <p align="center">
