@@ -91,15 +91,7 @@ pipeline {
                  sh 'pnpm test --runInBand'
             }
         }
-        // ==============================================================================
-        // CI: compilar la aplicacion
-        // ==============================================================================
-        stage("CI - Construccion de aplicacion"){
-            steps{
-                 // Ejecuta nest build y genera dist/. Comprueba la compilacion antes de publicar.
-                 sh 'pnpm build'
-            }
-        }
+       
 
          // ==============================================================================
         // CI: TEST DE LOS SECRETOS
@@ -115,52 +107,102 @@ pipeline {
                 }
             }
         }
-        // ==============================================================================
-        // CD: construir y publicar en dos registros
-        // ==============================================================================
-        // Esta etapa no tiene when: se ejecuta en todas las ramas que superan la CI.
-        stage("CD - Construccion imagen y upload"){
-            steps{
-                container("buildkit"){
-                    sh '''
-                         # Selecciona la CARPETA que contiene config.json con autenticacion para Docker Hub.
-                        export DOCKER_CONFIG=/docker-config/dockerhub
-                        # Falla si el archivo no existe o esta vacio, sin imprimir las credenciales.
-                        test -s ${DOCKER_CONFIG}/config.json
 
-                        # buildctl-daemonless.sh inicia BuildKit para esta construccion, sin usar el
-                        # daemon Docker del host. Las barras finales continuan el comando en otra linea.
-                        # --frontend dockerfile.v0 interpreta las instrucciones del Dockerfile.
-                        # --local context=. envia el directorio actual como contexto de construccion.
-                        # --local dockerfile=. indica donde encontrar el Dockerfile.
-                        # --output type=image exporta una imagen; name contiene dos etiquetas del mismo
-                        # repositorio. latest es mutable y BUILD_NUMBER identifica esta ejecucion Jenkins.
-                        # push=true publica las etiquetas en el registro en lugar de solo construir.
-                        # Las comillas escapadas mantienen unida la lista name con comas.
-                        
+        stage('CI - Creación de imagen') {
+            steps {
+                container('buildkit') {
+                    sh '''
+                        export DOCKER_CONFIG=/docker-config/dockerhub
+
+                        # Construye y guarda la cache dentro del agente.
                         buildctl-daemonless.sh build \
                         --frontend dockerfile.v0 \
                         --local context=. \
                         --local dockerfile=. \
+                        --export-cache type=local,dest=/tmp/buildkit-cache,mode=max
+                    '''
+                }
+            }
+        }
+
+        stage('CD - upload de imagen') {
+            steps {
+                container('buildkit') {
+                    sh '''
+                        # Publicacion en Docker Hub.
+                        export DOCKER_CONFIG=/docker-config/dockerhub
+                        test -s "${DOCKER_CONFIG}/config.json"
+
+                        buildctl-daemonless.sh build \
+                        --frontend dockerfile.v0 \
+                        --local context=. \
+                        --local dockerfile=. \
+                        --import-cache type=local,src=/tmp/buildkit-cache \
                         --output type=image,\\\"name=${DH_REPO}:diego-troncoso,${DH_REPO}:${BUILD_NUMBER}\\\",push=true
 
-                        # Cambia la carpeta de autenticacion para la segunda publicacion, esta vez en GHCR.
+                        # Publicacion en GitHub Container Registry.
                         export DOCKER_CONFIG=/docker-config/github
-                        # Comprueba tambien que la configuracion de GHCR exista y tenga contenido.
-                        test -s ${DOCKER_CONFIG}/config.json
+                        test -s "${DOCKER_CONFIG}/config.json"
 
-                        # Segunda llamada a BuildKit: construye y publica las dos etiquetas de GHCR.
-                        # El archivo actual realiza dos construcciones; no es una copia entre registros.
-                        
                         buildctl-daemonless.sh build \
                         --frontend dockerfile.v0 \
                         --local context=. \
                         --local dockerfile=. \
+                        --import-cache type=local,src=/tmp/buildkit-cache \
                         --output type=image,\\\"name=${GH_REPO}:diego-troncoso,${GH_REPO}:${BUILD_NUMBER}\\\",push=true
                     '''
                 }
             }
         }
+
+        
+        // ==============================================================================
+        // CD: construir y publicar en dos registros
+        // ==============================================================================
+        // Esta etapa no tiene when: se ejecuta en todas las ramas que superan la CI.
+        // stage("CD - Construccion imagen y upload"){
+        //     steps{
+        //         container("buildkit"){
+        //             sh '''
+        //                  # Selecciona la CARPETA que contiene config.json con autenticacion para Docker Hub.
+        //                 export DOCKER_CONFIG=/docker-config/dockerhub
+                        
+        //                 # Falla si el archivo no existe o esta vacio, sin imprimir las credenciales.
+        //                 test -s ${DOCKER_CONFIG}/config.json
+
+        //                 # buildctl-daemonless.sh inicia BuildKit para esta construccion, sin usar el
+        //                 # daemon Docker del host. Las barras finales continuan el comando en otra linea.
+        //                 # --frontend dockerfile.v0 interpreta las instrucciones del Dockerfile.
+        //                 # --local context=. envia el directorio actual como contexto de construccion.
+        //                 # --local dockerfile=. indica donde encontrar el Dockerfile.
+        //                 # --output type=image exporta una imagen; name contiene dos etiquetas del mismo
+        //                 # repositorio. latest es mutable y BUILD_NUMBER identifica esta ejecucion Jenkins.
+        //                 # push=true publica las etiquetas en el registro en lugar de solo construir.
+        //                 # Las comillas escapadas mantienen unida la lista name con comas.
+                        
+        //                 buildctl-daemonless.sh build \
+        //                 --frontend dockerfile.v0 \
+        //                 --local context=. \
+        //                 --local dockerfile=. \
+        //                 --output type=image,\\\"name=${DH_REPO}:diego-troncoso,${DH_REPO}:${BUILD_NUMBER}\\\",push=true
+
+        //                 # Cambia la carpeta de autenticacion para la segunda publicacion, esta vez en GHCR.
+        //                 export DOCKER_CONFIG=/docker-config/github
+        //                 # Comprueba tambien que la configuracion de GHCR exista y tenga contenido.
+        //                 test -s ${DOCKER_CONFIG}/config.json
+
+        //                 # Segunda llamada a BuildKit: construye y publica las dos etiquetas de GHCR.
+        //                 # El archivo actual realiza dos construcciones; no es una copia entre registros.
+                        
+        //                 buildctl-daemonless.sh build \
+        //                 --frontend dockerfile.v0 \
+        //                 --local context=. \
+        //                 --local dockerfile=. \
+        //                 --output type=image,\\\"name=${GH_REPO}:diego-troncoso,${GH_REPO}:${BUILD_NUMBER}\\\",push=true
+        //             '''
+        //         }
+        //     }
+        // }
 
         // ==============================================================================
         // CD: actualizar el Deployment existente en Kubernetes

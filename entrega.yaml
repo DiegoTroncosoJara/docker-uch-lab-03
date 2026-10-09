@@ -39,7 +39,7 @@ spec:
         - name: regcred-gh
       containers:
         - name: app
-          image: ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:latest
+          image: ghcr.io/diegotroncosojara/curso-03-uch-final-ghcr:diego-troncoso
           # hace que Kubernetes consulte el registry al iniciar cada Pod
           imagePullPolicy: Always
           ports:
